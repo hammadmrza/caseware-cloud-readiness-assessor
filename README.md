@@ -4,6 +4,8 @@
 
 > Built as a portfolio project by Hammad Mirza — April 2026
 
+> 🔗 **Live App:** [cloudreadinessassessment.streamlit.app](https://cloudreadinessassessment.streamlit.app/)
+
 ---
 
 ## Overview

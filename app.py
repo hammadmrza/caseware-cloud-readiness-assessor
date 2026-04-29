@@ -902,7 +902,7 @@ with col_e3:
 # ── Executive Summary ──
 st.markdown('<div class="section-header">Executive Summary</div>', unsafe_allow_html=True)
 
-exec_firm = f"**{firm_name}**" if firm_name else "The assessed firm"
+exec_firm = f"<strong>{firm_name}</strong>" if firm_name else "The assessed firm"
 exec_size = f", a {firm_size.lower()} practice," if firm_size != "Select..." else ""
 
 weakest_cat = min(scores, key=lambda k: (scores[k][0] / scores[k][1]) if scores[k][1] > 0 else 0)
@@ -922,10 +922,10 @@ elif num_med > 0:
     risk_summary = f" {num_med} medium-risk item{'s' if num_med > 1 else ''} were identified for mitigation during the engagement."
 
 exec_summary = (
-    f"{exec_firm}{exec_size} scores **{pct}%** overall readiness ({tier}), "
-    f"with strongest performance in **{strongest_cat}** ({strongest_pct}%) "
-    f"and the most opportunity for improvement in **{weakest_cat}** ({weakest_pct}%).{risk_summary} "
-    f"The recommended approach is a **{approach}** with an estimated duration of "
+    f"{exec_firm}{exec_size} scores <strong>{pct}%</strong> overall readiness ({tier}), "
+    f"with strongest performance in <strong>{strongest_cat}</strong> ({strongest_pct}%) "
+    f"and the most opportunity for improvement in <strong>{weakest_cat}</strong> ({weakest_pct}%).{risk_summary} "
+    f"The recommended approach is a <strong>{approach}</strong> with an estimated duration of "
     f"{est_weeks_low}\u2013{est_weeks_high} weeks."
 )
 

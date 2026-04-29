@@ -691,7 +691,7 @@ else:
     tier_emoji = "🔴"
     tier_desc = "Significant readiness gaps across multiple areas. Recommend foundational enablement engagement before cloud migration planning."
 
-st.markdown('<div class="section-header">📊 Migration Readiness Assessment Results</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header">Migration Readiness Assessment Results</div>', unsafe_allow_html=True)
 
 # ── Overall Score Display ──
 col_gauge, col_summary = st.columns([1, 1.2])
@@ -739,8 +739,24 @@ with col_summary:
     """, unsafe_allow_html=True)
 
 
+# ── Firm context (one-liner) ──
+profile_parts = []
+if firm_name:
+    profile_parts.append(f"**{firm_name}**")
+if firm_size != "Select...":
+    profile_parts.append(f"{firm_size}")
+if primary_services:
+    profile_parts.append(', '.join(primary_services))
+if client_count != "Select...":
+    profile_parts.append(f"{client_count} engagements/year")
+
+if profile_parts:
+    st.caption(" · ".join(profile_parts))
+
+
+
 # ── Category Breakdown ──
-st.markdown("#### Category Scores")
+st.markdown('<div class="section-header">Category Scores</div>', unsafe_allow_html=True)
 
 categories = list(scores.keys())
 cat_pcts = [round((s / m) * 100) if m > 0 else 0 for s, m in scores.values()]
@@ -781,7 +797,7 @@ high_risks = [(sev, msg) for sev, msg in risk_flags if sev == "High"]
 med_risks = [(sev, msg) for sev, msg in risk_flags if sev == "Medium"]
 
 if high_risks or med_risks:
-    st.markdown("#### ⚠️ Risk Flags")
+    st.markdown('<div class="section-header">Risk Flags</div>', unsafe_allow_html=True)
     for sev, msg in high_risks:
         st.markdown(f'<div class="risk-flag">🔴 <strong>HIGH:</strong> {msg}</div>', unsafe_allow_html=True)
     for sev, msg in med_risks:
@@ -789,13 +805,13 @@ if high_risks or med_risks:
 
 # ── Strengths ──
 if strengths:
-    st.markdown("#### ✅ Strengths & Accelerators")
+    st.markdown('<div class="section-header">Strengths & Accelerators</div>', unsafe_allow_html=True)
     for s in strengths:
         st.markdown(f'<div class="strength-flag">🟢 {s}</div>', unsafe_allow_html=True)
 
 
 # ── Recommended Approach ──
-st.markdown("#### 🗺️ Recommended Migration Approach")
+st.markdown('<div class="section-header">Recommended Migration Approach</div>', unsafe_allow_html=True)
 
 if pct >= 80:
     approach = "Standard Implementation"
@@ -846,7 +862,7 @@ for phase_name, duration, description in phases:
 
 
 # ── Engagement Sizing Estimate ──
-st.markdown("#### 📐 Engagement Sizing Estimate")
+st.markdown('<div class="section-header">Engagement Sizing Estimate</div>', unsafe_allow_html=True)
 
 # Estimate based on firm size and readiness
 size_multiplier = {
@@ -883,31 +899,122 @@ with col_e3:
               "1 Lead + 1 Associate" if size_multiplier <= 1.8 else "1 Lead + 2 Associates")
 
 
+# ── Executive Summary ──
+st.markdown('<div class="section-header">Executive Summary</div>', unsafe_allow_html=True)
+
+exec_firm = f"**{firm_name}**" if firm_name else "The assessed firm"
+exec_size = f", a {firm_size.lower()} practice," if firm_size != "Select..." else ""
+
+weakest_cat = min(scores, key=lambda k: (scores[k][0] / scores[k][1]) if scores[k][1] > 0 else 0)
+weakest_pct = round((scores[weakest_cat][0] / scores[weakest_cat][1]) * 100) if scores[weakest_cat][1] > 0 else 0
+
+strongest_cat = max(scores, key=lambda k: (scores[k][0] / scores[k][1]) if scores[k][1] > 0 else 0)
+strongest_pct = round((scores[strongest_cat][0] / scores[strongest_cat][1]) * 100) if scores[strongest_cat][1] > 0 else 0
+
+num_high = len(high_risks)
+num_med = len(med_risks)
+risk_summary = ""
+if num_high > 0 and num_med > 0:
+    risk_summary = f" The assessment identified {num_high} high-risk and {num_med} medium-risk items requiring attention before or during implementation."
+elif num_high > 0:
+    risk_summary = f" The assessment identified {num_high} high-risk item{'s' if num_high > 1 else ''} that must be addressed before proceeding."
+elif num_med > 0:
+    risk_summary = f" {num_med} medium-risk item{'s' if num_med > 1 else ''} were identified for mitigation during the engagement."
+
+exec_summary = (
+    f"{exec_firm}{exec_size} scores **{pct}%** overall readiness ({tier}), "
+    f"with strongest performance in **{strongest_cat}** ({strongest_pct}%) "
+    f"and the most opportunity for improvement in **{weakest_cat}** ({weakest_pct}%).{risk_summary} "
+    f"The recommended approach is a **{approach}** with an estimated duration of "
+    f"{est_weeks_low}\u2013{est_weeks_high} weeks."
+)
+
+st.markdown(f"""
+<div class="recommendation-box" style="margin-top: 0.5rem;">
+    <p style="font-size: 0.95rem; line-height: 1.7; margin: 0;">{exec_summary}</p>
+</div>
+""", unsafe_allow_html=True)
+
+
 # ── Next Steps ──
-st.markdown("#### 📋 Recommended Next Steps")
+st.markdown('<div class="section-header">Recommended Next Steps</div>', unsafe_allow_html=True)
 
 next_steps = []
 if high_risks:
-    next_steps.append("**1. Address High-Risk Items** — Schedule working sessions to resolve critical blockers before scoping the SOW.")
-if not firm_name:
-    next_steps.append("**Document firm profile details** — Complete the sidebar context for a comprehensive assessment record.")
-
+    next_steps.append("Address high-risk items — schedule working sessions to resolve critical blockers before scoping the SOW.")
 next_steps.extend([
-    f"**{'2' if high_risks else '1'}. Share this assessment** with the engagement partner and internal champion for alignment.",
-    f"**{'3' if high_risks else '2'}. Schedule a solution demo** — Walk the team through Caseware Cloud with their own sample engagement data.",
-    f"**{'4' if high_risks else '3'}. Scope the SOW** — Use this assessment to define implementation scope, timeline, and pricing.",
-    f"**{'5' if high_risks else '4'}. Set a target go-live date** — Align with the firm's engagement calendar (avoid Jan–April busy season for Canadian firms).",
+    "Share this assessment with the engagement partner and internal champion for alignment.",
+    "Schedule a solution demo — walk the team through Caseware Cloud with their own sample engagement data.",
+    "Scope the SOW — use this assessment to define implementation scope, timeline, and pricing.",
+    "Set a target go-live date — align with the firm's engagement calendar (avoid Jan-April busy season for Canadian firms).",
 ])
 
-for step in next_steps:
-    st.markdown(f"- {step}")
+for i, step in enumerate(next_steps, 1):
+    st.markdown(f"**{i}.** {step}")
+
+
+# ── Discovery Follow-Up Questions ──
+st.markdown('<div class="section-header">Discovery Follow-Up Questions</div>', unsafe_allow_html=True)
+st.caption("Top questions for the next client conversation, generated from this assessment's specific risk flags.")
+
+followup_questions = []
+
+# Technology-driven
+if current_software == "Manual / Excel-based workflows":
+    followup_questions.append("What specific workflows are currently managed in Excel? Which are highest priority to migrate to a structured platform?")
+elif current_software == "CCH Engagement / ProSystem fx":
+    followup_questions.append("What is driving the decision to move away from CCH? Are there specific pain points, or is this part of a broader firm technology strategy?")
+
+if wp_version in ["1–3 versions behind", "3+ versions behind"]:
+    followup_questions.append("Is the firm open to upgrading Working Papers to the current version before cloud migration, or do they prefer a direct move to Caseware Cloud?")
+
+if it_support in ["Partner/staff handles IT informally", "No dedicated IT support"]:
+    followup_questions.append("Would the firm be open to engaging a managed IT provider (MSP) to support the migration and ongoing cloud operations?")
+
+# Team readiness
+if partner_buy_in in ["Moderate — open to it but not championing", "Mixed — some partners supportive, others resistant"]:
+    followup_questions.append("Which partner would be the ideal executive sponsor? What specific concerns do the hesitant partners have?")
+
+if partner_buy_in == "Low — primarily an IT/operations initiative":
+    followup_questions.append("Has a business case been presented to the partnership? What ROI metrics would be most persuasive?")
+
+if change_champion in ["Not yet — but willing to assign", "No — and unlikely to assign"]:
+    followup_questions.append("Can the firm designate both a senior sponsor (partner-level) and a day-to-day project lead for the implementation?")
+
+if training_capacity == "Very limited — peak season, no slack in schedule":
+    followup_questions.append("When does the firm's off-season begin? Can we align the training-intensive phases with that window?")
+
+# Data & security
+if client_restrictions in ["Significant number (10-30%) with restrictions", "Many (30%+) or unsure"]:
+    followup_questions.append("Which clients have cloud restrictions? Are these contractual, regulatory, or preference-based? Is the firm prepared to operate a hybrid model?")
+
+if data_sovereignty == "Unsure — needs legal review":
+    followup_questions.append("Does the firm have external legal counsel who should review Caseware's data processing agreements and hosting documentation?")
+
+# Business drivers
+if timeline == "ASAP — urgent (within 3 months)":
+    followup_questions.append("What is driving the urgency? Would the firm accept a phased go-live rather than a full cutover?")
+
+if budget_awareness in ["No budget allocated yet", "Unknown"]:
+    followup_questions.append("What approval process does the firm follow for technology investments of this size?")
+
+# Cap at 6 most relevant
+followup_questions = followup_questions[:6]
+
+if followup_questions:
+    for i, q in enumerate(followup_questions, 1):
+        st.markdown(f"""<div style="background: white; border-left: 3px solid #2d6a9f; padding: 0.6rem 1rem; border-radius: 0 6px 6px 0; margin-bottom: 0.4rem; font-size: 0.9rem;">
+            <strong style="color: #2d6a9f;">Q{i}.</strong> {q}
+        </div>""", unsafe_allow_html=True)
+else:
+    st.caption("No specific follow-up questions triggered — the firm's readiness profile is well-documented.")
 
 
 
 # ── Footer ──
 st.markdown(f"""
 <div class="footer-note">
-    <strong>Caseware Cloud Migration Readiness Assessor</strong> · v1.0<br>
+    <strong>Caseware Cloud Migration Readiness Assessor</strong> · v1.2<br>
     Built by Hammad Mirza · Professional Services Portfolio Project · April 2026<br>
     <em>This tool is designed to support structured discovery conversations during pre-implementation engagements.
     It is not affiliated with or endorsed by Caseware International Inc.</em>
